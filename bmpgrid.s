@@ -96,7 +96,10 @@ bmp_grid:
 
 	movq	8(%rsp), %rax
 	imulq	%rcx
-	subq	8(%rsp), %rax
+	#subq	8(%rsp), %rax
+	subq	24(%rsp), %rax
+	subq	24(%rsp), %rax
+	subq	24(%rsp), %rax
 	pushq	%rax
 
 	movq	24(%rsp), %rdx	# %rdx = height
