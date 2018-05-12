@@ -39,19 +39,16 @@ bmp_grid:
 
 	pushq	%rax
 
-	# %rax is distance from (k,l) to (k, l+1) imgptr
+	# %rax is distance from (k,l) to (k,l+1) imgptr
 
 	movq	8(%rsp), %rax
 	imulq	(%rsp)
 	subq	%rcx, %rax
 	subq	%rcx, %rax
 	subq	%rcx, %rax
-	#leaq	(%rcx, %rcx, 2), %rax	# rax = -(height - 1) * rax + 3 * gap
-	#leaq	(%rax, %rax, 2), %rax
-
 	pushq	%rax
 
-	# %rax is a a distance from (n,top + 1) to (n+1,bottom) imgptr
+	# %rax is a a distance from (k,top+1) to (k+gap,bottom) imgptr
 
 	#################################################
 	#												#
@@ -59,57 +56,78 @@ bmp_grid:
 	#												#
 	#################################################
 
-	movq	16(%rsp), %rdx # %rdx = height
+	movq	16(%rsp), %rdx	# %rdx = height
+	movq	24(%rsp), %rsi	# %rsi = width 
 
-/*
 .L2:
-	movl	$0x0000, (%rdi)
-	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
-	addq	8(%rsp), %rdi
-	decq	%rdx
-	cmpq	$0, %rdx
+	movb	$0x00, (%rdi)
+	movb	$0x00, 1(%rdi)
+	movb	$0xff, 2(%rdi)	# *imgptr = (0,0,255)
+	addq	8(%rsp), %rdi	# (k,l) -> (k,l+1)
+	decq	%rdx			# %rdx--
+	cmpq	$0, %rdx		# %rdx > 0?
 	jg		.L2
 
-	subq	(%rsp), %rdi
-*/
-
-	movq	24(%rsp), %rdx # %rdx = height
-
-.L2:
-	movq	16(%rsp), %rdx # %rdx = height
-
-.L3:
-	movl	$0x0000, (%rdi)
-	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
-	addq	8(%rsp), %rdi
-	decq	%rdx
-	cmpq	$0, %rdx
-	jg		.L3
-
-	subq	(%rsp), %rdi
-	subq	%rcx, %rsi
-	cmpq	$0, %rsi
+	subq	(%rsp), %rdi	# (k,top) -> (k+gap,bottom)
+	subq	%rcx, %rsi		# %rsi -= gap
+	cmpq	$0, %rsi		# %rsi > 0?
+	#cmpq	%rcx, %rsi		# %rsi > 0?
+	movq	16(%rsp), %rdx	# %rdx = height
 	jg		.L2
 
 
 	#################################################
-	#	여기 밑에부터 수정하고 합시다 ^~^			#
+	#		여기 밑에부터 밥먹고 합시다 ^~^			#
 	#################################################
+
 
 
 	addq	(%rsp), %rdi
-	addq	%rsi, %rdi
-	addq	%rcx, %rdi
+	subq	8(%rsp), %rdi
 	subq	$0x03, %rdi
 
-	movl	$0x0000, (%rdi)
-	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
+	addq	%rsi, %rdi
+	addq	%rsi, %rdi
+	addq	%rsi, %rdi
 
+	addq	%rcx, %rdi
+	addq	%rcx, %rdi
+	addq	%rcx, %rdi
+
+
+	movq	8(%rsp), %rax
+	imulq	%rcx
+	subq	8(%rsp), %rax
+	pushq	%rax
+
+	movq	24(%rsp), %rdx	# %rdx = height
+	movq	32(%rsp), %rsi	# %rsi = width
+
+
+.L3:
+	movb	$0x00, (%rdi)
+	movb	$0x00, 1(%rdi)
+	movb	$0xff, 2(%rdi)	# *imgptr = (0,0,255)
+	subq	$0x03, %rdi		# (k,l) -> (k-1,l)
+	decq	%rsi			# %rsi--
+	cmpq	$0, %rsi		# %rsi > 0?
+	jg		.L3
+
+	subq	(%rsp), %rdi	# (end,l) -> (end,l-gap)
+	subq	%rcx, %rdx		# %rdx -= gap
+	cmpq	$0, %rdx		# %rdx > 0?
+	movq	32(%rsp), %rsi	# %rsi = width
+	jg		.L3
+
+
+	movq	24(%rsp), %rdx	# %rdx = height
+
+
+	#------------------------------------------------------------
+
+	popq	%rax
 	popq	%rax
 	popq	%rax
 	popq	%rdx
 	popq	%rsi
-
-	#------------------------------------------------------------
-
 	ret
