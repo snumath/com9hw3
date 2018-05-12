@@ -60,8 +60,7 @@ bmp_grid:
 	movq	24(%rsp), %rsi	# %rsi = width 
 
 .L2:
-	movb	$0x00, (%rdi)
-	movb	$0x00, 1(%rdi)
+	movw	$0x00, (%rdi)
 	movb	$0xff, 2(%rdi)	# *imgptr = (0,0,255)
 	addq	8(%rsp), %rdi	# (k,l) -> (k,l+1)
 	decq	%rdx			# %rdx--
@@ -105,8 +104,7 @@ bmp_grid:
 
 
 .L3:
-	movb	$0x00, (%rdi)
-	movb	$0x00, 1(%rdi)
+	movw	$0x00, (%rdi)
 	movb	$0xff, 2(%rdi)	# *imgptr = (0,0,255)
 	subq	$0x03, %rdi		# (k,l) -> (k-1,l)
 	decq	%rsi			# %rsi--
