@@ -33,25 +33,25 @@ bmp_grid:
 
 	# width, height is in the stack, %rsi = width, %rdx = height
 
-
 	leaq	(%rsi, %rsi, 2), %rax
 	addq	$0x03, %rax
 	and		$0xfffffffffffffffc, %rax
+
 	pushq	%rax
 
-	# %rax is length of vertical bits
+	# %rax is distance from (k,l) to (k, l+1) imgptr
 
-	movq	%rdx, %rax
-	decq	%rax
-	imulq	4(%rsp)
+	movq	8(%rsp), %rax
+	imulq	(%rsp)
+	subq	%rcx, %rax
+	subq	%rcx, %rax
+	subq	%rcx, %rax
+	#leaq	(%rcx, %rcx, 2), %rax	# rax = -(height - 1) * rax + 3 * gap
+	#leaq	(%rax, %rax, 2), %rax
 
-
-	imulq	$-0x01, %rax
-	leaq	(%rcx, %rax,), %rax
-	leaq	(%rax, %rax, 2), %rax
 	pushq	%rax
 
-	# %rax is a a distance from (n,top) to (n+1,bottom) imgptr
+	# %rax is a a distance from (n,top + 1) to (n+1,bottom) imgptr
 
 	#################################################
 	#												#
@@ -59,32 +59,57 @@ bmp_grid:
 	#												#
 	#################################################
 
+	movq	16(%rsp), %rdx # %rdx = height
+
+/*
 .L2:
-	movq	4(%rsp), %rdx # %rdx = height
+	movl	$0x0000, (%rdi)
+	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
+	addq	8(%rsp), %rdi
+	decq	%rdx
+	cmpq	$0, %rdx
+	jg		.L2
+
+	subq	(%rsp), %rdi
+*/
+
+	movq	24(%rsp), %rdx # %rdx = height
+
+.L2:
+	movq	16(%rsp), %rdx # %rdx = height
 
 .L3:
-	movb	$0x00, (%rdi)
-	movb	$0x00, 1(%rdi)
+	movl	$0x0000, (%rdi)
 	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
-	addq	%rax, %rdi		# go up 1 step
-	decq	%rd
+	addq	8(%rsp), %rdi
+	decq	%rdx
 	cmpq	$0, %rdx
 	jg		.L3
 
-	addq	%rbx, %rdi
+	subq	(%rsp), %rdi
 	subq	%rcx, %rsi
-	cmpq	$0x00, %rsi
+	cmpq	$0, %rsi
 	jg		.L2
 
-	subq	%rcx, %rdi
-	popq	%rdx
-	popq	%rsi
+
+	#################################################
+	#	여기 밑에부터 수정하고 합시다 ^~^			#
+	#################################################
 
 
-	#------------------------------------------------------------
+	addq	(%rsp), %rdi
+	addq	%rsi, %rdi
+	addq	%rcx, %rdi
+	subq	$0x03, %rdi
 
+	movl	$0x0000, (%rdi)
+	movb	$0xff, 2(%rdi)	# *imgptr = (0, 0, 255)
+
+	popq	%rax
 	popq	%rax
 	popq	%rdx
 	popq	%rsi
+
+	#------------------------------------------------------------
 
 	ret
