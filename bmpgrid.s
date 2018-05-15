@@ -85,18 +85,16 @@ bmp_grid:
 	subq	8(%rsp), %rdi
 	subq	$0x03, %rdi
 
-	addq	%rsi, %rdi
-	addq	%rsi, %rdi
-	addq	%rsi, %rdi
+	leaq	(%rsi, %rsi, 2), %rax
+	addq	%rax, %rdi
+	#addq	%rsi, %rdi
 
-	addq	%rcx, %rdi
-	addq	%rcx, %rdi
-	addq	%rcx, %rdi
+	leaq	(%rcx, %rcx, 2), %rax
+	addq	%rax, %rdi
 
 
 	movq	8(%rsp), %rax
 	imulq	%rcx
-	#subq	8(%rsp), %rax
 	subq	24(%rsp), %rax
 	subq	24(%rsp), %rax
 	subq	24(%rsp), %rax
